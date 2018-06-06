@@ -82,7 +82,7 @@ function draw() {
 
     } else {
         stroke('red');
-        ship.Show();
+        ship.Show(shipImg);
         ShowScore();
         DisplayGameOver();
     }
