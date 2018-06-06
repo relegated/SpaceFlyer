@@ -13,10 +13,11 @@ function Ship(inCursorX, inCursorY) {
 
     }
 
-    this.Show = function () {
-        triangle(this.cursorX, this.cursorY - 40, this.cursorX + 33, this.cursorY + 40, this.cursorX - 33, this.cursorY + 40);
+    this.Show = function (sprite) {
+        //triangle(this.cursorX, this.cursorY - 40, this.cursorX + 33, this.cursorY + 40, this.cursorX - 33, this.cursorY + 40);
+        image(sprite, this.cursorX - 40, this.cursorY - 40);
     }
-
+    
     this.CheckCollision = function (enemy) {
         var distanceToEnemy = dist(this.cursorX, this.cursorY, enemy.position.x + 5, enemy.position.y + 5);
 
