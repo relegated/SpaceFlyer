@@ -38,27 +38,40 @@ function draw() {
         ship.Update(mouseX, mouseY);
         ship.Show(shipImg);
         if (keyIsDown(SPACE) && frameCount % 5 == 0) {
-            bullets.push(new Bullet(mouseX, mouseY - 5, 0, -7));
+            bullets.push(new Bullet(mouseX, mouseY - 5, 0, -7, true));
 
         }
 
         //update bullets
         for (var i = 0; i < bullets.length; i++) {
             bullets[i].Update();
-            stroke (239,62,43);
+            if (bullets[i].isFromShip)
+                stroke(70,50,255);
+            else
+                stroke(239, 62, 43);
             bullets[i].Show();
             stroke(255);
+
+            if (bullets[i].isFromShip == false){
+                ship.CheckBulletCollision(bullets[i]);
+            }
         }
 
         //update enemies
         for (var i = 0; i < enemies.length; i++) {
+            //shoot
+            if (frameCount % 50 == 0 && random(1) < 0.3) {
+                bullets.push(enemies[i].ShootBullet(ship.cursorX, ship.cursorY));
+            }
             enemies[i].Update();
             enemies[i].Show(enemyImg);
             ship.CheckCollision(enemies[i]);
             for (var j = 0; j < bullets.length; j++) {
-                if (enemies[i].CheckBulletCollision(bullets[j])) {
-                    bullets[j].isDead = true;
-                    score += 5;
+                if (bullets[j].isFromShip) {
+                    if (enemies[i].CheckBulletCollision(bullets[j])) {
+                        bullets[j].isDead = true;
+                        score += 5;
+                    }
                 }
             }
         }
@@ -89,12 +102,12 @@ function draw() {
 
 }
 
-function keyPressed(){
-    if (keyCode === 13 && ship.isDead){
+function keyPressed() {
+    if (keyCode === 13 && ship.isDead) {
         ship.isDead = false;
         score = 0;
-        enemies.splice(0,enemies.length);
-        bullets.splice(0,bullets.length);
+        enemies.splice(0, enemies.length);
+        bullets.splice(0, bullets.length);
     }
 }
 
@@ -108,11 +121,11 @@ function ShowScore() {
     noFill();
 }
 
-function DisplayGameOver(){
+function DisplayGameOver() {
     textSize(48);
     fill(255);
     noStroke();
-    text("GAME OVER -- Press Enter to restart", 300, height/2);
+    text("GAME OVER -- Press Enter to restart", 300, height / 2);
     stroke(255);
     noFill();
 }
