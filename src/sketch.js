@@ -12,6 +12,7 @@ let enemyImg;
 function preload() {
     shipImg = loadImage('assets/ship.png');
     enemyImg = loadImage('assets/enemy.png');
+    heartImg = loadImage('assets/heart.png');
 }
 
 function setup() {
@@ -31,6 +32,8 @@ function draw() {
 
         ShowScore();
 
+        DisplayHealth();
+
         if (random(1) < 0.03) {
             enemies.push(new Enemy(floor(random(width))));
         }
@@ -46,14 +49,16 @@ function draw() {
         for (var i = 0; i < bullets.length; i++) {
             bullets[i].Update();
             if (bullets[i].isFromShip)
-                stroke(70,50,255);
+                stroke(70, 50, 255);
             else
                 stroke(239, 62, 43);
             bullets[i].Show();
             stroke(255);
 
-            if (bullets[i].isFromShip == false){
-                ship.CheckBulletCollision(bullets[i]);
+            if (bullets[i].isFromShip == false) {
+                if (ship.CheckBulletCollision(bullets[i])) {
+                    bullets[i].isDead = true;
+                }
             }
         }
 
@@ -94,20 +99,25 @@ function draw() {
         }
 
     } else {
+        background(0);
         stroke('red');
         ship.Show(shipImg);
         ShowScore();
         DisplayGameOver();
+        for (var i = 0; i < enemies.length; i++)
+            enemies[i].Show(enemyImg);
     }
 
 }
 
+//Restart Game
 function keyPressed() {
     if (keyCode === 13 && ship.isDead) {
         ship.isDead = false;
         score = 0;
         enemies.splice(0, enemies.length);
         bullets.splice(0, bullets.length);
+        ship.health = 5;
     }
 }
 
@@ -128,4 +138,12 @@ function DisplayGameOver() {
     text("GAME OVER -- Press Enter to restart", 300, height / 2);
     stroke(255);
     noFill();
+}
+
+function DisplayHealth() {
+    let CurrentX = width - 60;
+    for (var i = 0; i < ship.health; i++) {
+        image(heartImg, CurrentX, 15);
+        CurrentX -= 50;
+    }
 }
