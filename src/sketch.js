@@ -70,7 +70,9 @@ function draw() {
             }
             enemies[i].Update();
             enemies[i].Show(enemyImg);
-            ship.CheckCollision(enemies[i]);
+            if (ship.CheckCollision(enemies[i]) == true){
+                enemies[i].isDead = true;
+            }
             for (var j = 0; j < bullets.length; j++) {
                 if (bullets[j].isFromShip) {
                     if (enemies[i].CheckBulletCollision(bullets[j])) {
