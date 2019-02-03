@@ -30,9 +30,9 @@ function PowerUp(inX, inY, indX, indY, PowerUpType) {
             if (dist(this.x, this.y, bullet.x, bullet.y) <= this.size / 2 + 2) {
                 this.isDead = true;
                 return true;
-            } else {
-                return false;
-            }
-        } else return false;
+            } 
+        }
+        
+        return false;
     }
 }
