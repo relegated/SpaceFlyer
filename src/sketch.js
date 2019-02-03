@@ -5,6 +5,7 @@ const SPACE = 32;
 let ship = new Ship(0, 0);
 let enemies = [];
 let bullets = [];
+let powerUps = [];
 let score = 0;
 let shipImg;
 let enemyImg;
@@ -70,7 +71,7 @@ function draw() {
             }
             enemies[i].Update();
             enemies[i].Show(enemyImg);
-            if (ship.CheckCollision(enemies[i]) == true){
+            if (ship.CheckCollision(enemies[i]) == true) {
                 enemies[i].isDead = true;
             }
             for (var j = 0; j < bullets.length; j++) {
@@ -78,6 +79,25 @@ function draw() {
                     if (enemies[i].CheckBulletCollision(bullets[j])) {
                         bullets[j].isDead = true;
                         score += 5;
+                        //chance to spawn PowerUp
+                        if (random() >= 0.75) {
+                            powerUps.push(new PowerUp(enemies[i].position.x, enemies[i].position.y, random(-3, 3), random(-3, 3)));
+                        }
+                    }
+                }
+            }
+        }
+
+        //update powerups
+        for (var i = 0; i < powerUps.length; i++) {
+            powerUps[i].Update();
+            stroke(255);
+            powerUps[i].Show();
+
+            for (var j = 0; j < bullets.length; j++) {
+                if (bullets[j].isFromShip) {
+                    if (powerUps[i].CheckBulletCollision(bullets[j])) {
+                        bullets[j].isDead = true;
                     }
                 }
             }
@@ -97,6 +117,13 @@ function draw() {
         for (var i = bullets.length - 1; i > 0; i--) {
             if (bullets[i].isDead) {
                 bullets.splice(i, 1);
+            }
+        }
+
+        //cleanup dead powerups
+        for (var i = powerUps.length - 1; i >= 0; i--) {
+            if (powerUps[i].isDead) {
+                powerUps.splice(i, 1);
             }
         }
 
