@@ -21,7 +21,7 @@ function PowerUp(inX, inY, indX, indY, PowerUpType) {
 
     this.Show = function () {
         if ((this.iFrames % 3 != 0) || (this.iFrames == 0))
-        ellipse(this.x, this.y, this.size);
+            ellipse(this.x, this.y, this.size);
 
     }
 
@@ -30,9 +30,8 @@ function PowerUp(inX, inY, indX, indY, PowerUpType) {
             if (dist(this.x, this.y, bullet.x, bullet.y) <= this.size / 2 + 2) {
                 this.isDead = true;
                 return true;
-            } 
+            }
         }
-        
         return false;
     }
 }

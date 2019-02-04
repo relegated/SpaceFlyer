@@ -6,12 +6,14 @@ let ship = new Ship(0, 0);
 let enemies = [];
 let bullets = [];
 let powerUps = [];
+let possiblePowerUps = ["spread", "shield", "charge", "score up"];
 let score = 0;
 let shipImg;
 let enemyImg;
+let activePowerUps = [];
 
 function preload() {
-    shipImg = loadImage('assets/ship.png');
+    shipImg = loadImage('assets/ship.png')
     enemyImg = loadImage('assets/enemy.png');
     heartImg = loadImage('assets/heart.png');
 }
@@ -43,7 +45,10 @@ function draw() {
         ship.Show(shipImg);
         if (keyIsDown(SPACE) && frameCount % 5 == 0) {
             bullets.push(new Bullet(mouseX, mouseY - 5, 0, -7, true));
-
+            if (contains(activePowerUps, "spread")){
+                bullets.push(new Bullet(mouseX, mouseY - 5, -3, -7, true))
+                bullets.push(new Bullet(mouseX, mouseY - 5, 3, -7, true))
+            }
         }
 
         //update bullets
@@ -81,7 +86,7 @@ function draw() {
                         score += 5;
                         //chance to spawn PowerUp
                         if (random() >= 0.75) {
-                            powerUps.push(new PowerUp(enemies[i].position.x, enemies[i].position.y, random(-3, 3), random(-3, 3)));
+                            powerUps.push(new PowerUp(enemies[i].position.x, enemies[i].position.y, random(-3, 3), random(-3, 3), possiblePowerUps[floor(random(possiblePowerUps.len))]));
                         }
                     }
                 }
@@ -123,6 +128,8 @@ function draw() {
         //cleanup dead powerups
         for (var i = powerUps.length - 1; i >= 0; i--) {
             if (powerUps[i].isDead) {
+                //Add dead powerup's type to active powerups
+                activePowerUps.push(powerUps[i].PowerUpType)
                 powerUps.splice(i, 1);
             }
         }
@@ -138,7 +145,14 @@ function draw() {
     }
 
 }
-
+//List "contains" function:
+function contains(lst, str) {
+    for (i = 0; i++; i < lst.len) {
+        if (lst[i] == str)
+            return true
+    }
+    return false
+}
 //Restart Game
 function keyPressed() {
     if (keyCode === 13 && ship.isDead) {

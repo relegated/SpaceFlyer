@@ -10,7 +10,7 @@ function Bullet(inX, inY, indX, indY, fromShip) {
         this.x += this.dx;
         this.y += this.dy;
 
-        if (this.x > width || this.x < 0 || this.y > height || this.y < 0 )
+        if (this.x > width || this.x < 0 || this.y > height || this.y < 0)
             this.isDead = true;
     }
 
