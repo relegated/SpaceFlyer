@@ -6,25 +6,29 @@ let ship = new Ship(0, 0);
 let enemies = [];
 let bullets = [];
 let powerUps = [];
-let possiblePowerUps = ["spread", "shield", "charge", "score up"];
+let possiblePowerUps = ["spread"];
 let score = 0;
 let shipImg;
 let enemyImg;
+let NoWayImg;
+let HitY = 0;
 let activePowerUps = [];
 
 function preload() {
     shipImg = loadImage('assets/ship.png')
     enemyImg = loadImage('assets/enemy.png');
     heartImg = loadImage('assets/heart.png');
+    NoWayImg = loadImage('assets/no.cur')
+    font = loadFont('assets/serif.ttf')
 }
 
 function setup() {
-    createCanvas(1300, 900);
+    createCanvas(windowWidth - 10, windowHeight - 17);
     background(0);
     stroke(255);
     noFill();
-
-
+    noCursor();
+    frameRate(70);
 }
 
 function draw() {
@@ -43,21 +47,25 @@ function draw() {
 
         ship.Update(mouseX, mouseY);
         ship.Show(shipImg);
-        if (keyIsDown(SPACE) && frameCount % 5 == 0) {
-            bullets.push(new Bullet(mouseX, mouseY - 5, 0, -7, true));
-            if (contains(activePowerUps, "spread")){
-                bullets.push(new Bullet(mouseX, mouseY - 5, -3, -7, true))
-                bullets.push(new Bullet(mouseX, mouseY - 5, 3, -7, true))
+        if ((keyIsDown(SPACE) || mouseIsPressed) && frameCount % 5 == 0) {
+            bullets.push(new Bullet(mouseX + 10, mouseY - 5, 0, -7, true));
+            if (contains(activePowerUps, "spread")) {
+                //Adds 2 new bullets for "spread" powerup
+                bullets.push(new Bullet(mouseX + 10, mouseY - 5, -3, -7, true))
+                bullets.push(new Bullet(mouseX + 10, mouseY - 5, 3, -7, true))
             }
         }
 
         //update bullets
         for (var i = 0; i < bullets.length; i++) {
             bullets[i].Update();
-            if (bullets[i].isFromShip)
-                stroke(70, 50, 255);
-            else
-                stroke(239, 62, 43);
+            noStroke()
+            if (bullets[i].isFromShip) {
+                fill(70, 50, 255);
+            }
+            else {
+                fill(239, 62, 43);
+            }
             bullets[i].Show();
             stroke(255);
 
@@ -67,7 +75,6 @@ function draw() {
                 }
             }
         }
-
         //update enemies
         for (var i = 0; i < enemies.length; i++) {
             //shoot
@@ -97,8 +104,8 @@ function draw() {
         for (var i = 0; i < powerUps.length; i++) {
             powerUps[i].Update();
             stroke(255);
+            noFill()
             powerUps[i].Show();
-
             for (var j = 0; j < bullets.length; j++) {
                 if (bullets[j].isFromShip) {
                     if (powerUps[i].CheckBulletCollision(bullets[j])) {
@@ -135,6 +142,9 @@ function draw() {
         }
 
     } else {
+        cursor(ARROW)
+        if (mouseIsPressed)
+            cursor(NoWayImg)
         background(0);
         stroke('red');
         ship.Show(shipImg);
@@ -145,14 +155,6 @@ function draw() {
     }
 
 }
-//List "contains" function:
-function contains(lst, str) {
-    for (i = 0; i++; i < lst.len) {
-        if (lst[i] == str)
-            return true
-    }
-    return false
-}
 //Restart Game
 function keyPressed() {
     if (keyCode === 13 && ship.isDead) {
@@ -160,15 +162,24 @@ function keyPressed() {
         score = 0;
         enemies.splice(0, enemies.length);
         bullets.splice(0, bullets.length);
+        activePowerUps.splice(0, activePowerUps.length)
         ship.health = 5;
     }
 }
-
+function contains(list, item) {
+    for (var i = 0; i++; i < list.length) {
+        if (list[i] == item)
+            return true
+    }
+    return false
+}
 function ShowScore() {
     //show score
     textSize(32);
-    fill("blue");
+    textFont(font);
+    fill("#FFFFFF");
     noStroke();
+    textAlign(LEFT)
     text("Score: " + score, 10, 40);
     stroke(255);
     noFill();
@@ -178,7 +189,8 @@ function DisplayGameOver() {
     textSize(48);
     fill(255);
     noStroke();
-    text("GAME OVER -- Press Enter to restart", 300, height / 2);
+    textAlign(CENTER)
+    text("GAME OVER -- Press Enter to restart", 0, height / 2, width, height);
     stroke(255);
     noFill();
 }
@@ -189,4 +201,7 @@ function DisplayHealth() {
         image(heartImg, CurrentX, 15);
         CurrentX -= 50;
     }
+}
+function windowResized() {
+    resizeCanvas(windowWidth - 10, windowHeight - 17)
 }

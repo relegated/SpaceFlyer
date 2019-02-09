@@ -22,6 +22,7 @@ function Ship(inCursorX, inCursorY) {
 
         if ((this.IFrames > 0 && frameCount % 10 == 0) || (this.IFrames <= 0))
             image(sprite, this.cursorX - 40, this.cursorY - 40);
+            }
     }
 
     this.CheckBulletCollision = function (bullet) {
