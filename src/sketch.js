@@ -11,7 +11,6 @@ let score = 0;
 let shipImg;
 let enemyImg;
 let NoWayImg;
-let HitY = 0;
 let activePowerUps = [];
 
 function preload() {
@@ -189,7 +188,7 @@ function DisplayGameOver() {
     textSize(48);
     fill(255);
     noStroke();
-    textAlign(CENTER)
+    textAlign(CENTER, CENTER)
     text("GAME OVER -- Press Enter to restart", 0, height / 2, width, height);
     stroke(255);
     noFill();

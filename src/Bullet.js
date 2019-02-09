@@ -16,7 +16,6 @@ function Bullet(inX, inY, indX, indY, fromShip) {
 
 
     this.Show = function () {
-        if (this.isFromShip == true)
-            ellipse(this.x, this.y, 5);
+        ellipse(this.x, this.y, 5);
     }
 }
