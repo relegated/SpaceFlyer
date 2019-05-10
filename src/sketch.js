@@ -1,23 +1,70 @@
 //constants
 const SPACE = 32;
-
 //variables
 let ship = new Ship(0, 0);
 let enemies = [];
 let bullets = [];
 let powerUps = [];
-let possiblePowerUps = ["spread"];
 let score = 0;
+let spread = false;
 let shipImg;
+let ship2Img;
+let ship3Img;
 let enemyImg;
-let NoWayImg;
-let activePowerUps = [];
+let heartImg;
+let EshipImgs;
+let cPressed = false;
+let costume = 0
+let sprite;
+
+//Classes
+//Not working
+//Constructs, creates, and updates stars. class StarWorker(){
+/*let starsR;
+let starsX;
+let starsY;
+function Stars_SpawnOrigin() {
+    starsX = []; //X pos of stars
+    starsY = []; //Y pos of stars
+    starsR = []; //Radius of stars
+    for (var i = 0; i < Math.floor(random(15, 20) + (height / 15)); i++) {
+        starsR.push(random(15, 20))
+        starsX.push(random(width - starsR[starsR.length() - 1]))
+        starsY.push(random(height))
+    }
+}
+function Stars_Update() {
+    for (var i = 0; i < starsR.length(); i++) {
+        starsY[i] += Math.round(starsR[i] / 5)
+        noStroke()
+        fill('#FFFFFF')
+        ellipse(starsX[i], starsY[i], starsR[i])
+        if (starsY[i] + (2 * starsR[i]) > height) {
+            starsR.splice(i)
+            starsX.splice(i)
+            starsY.splice(i)
+            i--;
+        }
+    }
+    if (random() >= 0.75) {
+        starsR.push(random(15, 20))
+        starsX.push(random(width - starsR[starsR.length]))
+        starsY.push(random(height))
+    }
+}*/
+//}
 
 function preload() {
-    shipImg = loadImage('assets/ship.png')
-    enemyImg = loadImage('assets/enemy.png');
+    shipImg = loadImage('assets/ship.png');
+    ship2Img = loadImage('assets/ship2.png');
+    ship3Img = loadImage('assets/ship3.png');
     heartImg = loadImage('assets/heart.png');
-    NoWayImg = loadImage('assets/no.cur')
+    EshipImgs = {
+        "Down": loadImage('assets/Eship.png'),
+        "Right": loadImage('assets/EshipR.png'),
+        "Left": loadImage('assets/EshipL.png'),
+        "Normal": loadImage('assets/enemy.png')
+    };
     font = loadFont('assets/serif.ttf')
 }
 
@@ -26,32 +73,52 @@ function setup() {
     background(0);
     stroke(255);
     noFill();
-    noCursor();
     frameRate(70);
 }
 
 function draw() {
 
     if (!ship.isDead) {
-
+        noCursor();
         background(0);
-
+        //Stars_Update();
         ShowScore();
-
         DisplayHealth();
 
         if (random(1) < 0.03) {
             enemies.push(new Enemy(floor(random(width))));
         }
-
-        ship.Update(mouseX, mouseY);
-        ship.Show(shipImg);
+        sprite = costume % 3
+        ship.Update(mouseX, mouseY, sprite);
+        if (sprite == 0) {
+            ship.Show(shipImg);
+        } else if (sprite == 1) {
+            ship.Show(ship2Img);
+        } else {
+            ship.Show(ship3Img);
+        }
         if ((keyIsDown(SPACE) || mouseIsPressed) && frameCount % 5 == 0) {
-            bullets.push(new Bullet(mouseX + 10, mouseY - 5, 0, -7, true));
-            if (contains(activePowerUps, "spread")) {
-                //Adds 2 new bullets for "spread" powerup
-                bullets.push(new Bullet(mouseX + 10, mouseY - 5, -3, -7, true))
-                bullets.push(new Bullet(mouseX + 10, mouseY - 5, 3, -7, true))
+            if (sprite == 2) {
+                bullets.push(new Bullet(mouseX - 31, mouseY - 5, 0, -7, true));
+                if (spread == true) {
+                    //Adds 2 new bullets for "spread" powerup
+                    bullets.push(new Bullet(mouseX + 10, mouseY - 5, -3, -7, true))
+                    bullets.push(new Bullet(mouseX + 10, mouseY - 5, 3, -7, true))
+                }
+            } else if (sprite == 1) {
+                bullets.push(new Bullet(mouseX + 7, mouseY - 5, 0, -7, true));
+                if (spread == true) {
+                    //Adds 2 new bullets for "spread" powerup
+                    bullets.push(new Bullet(mouseX + 10, mouseY - 5, -3, -7, true))
+                    bullets.push(new Bullet(mouseX + 10, mouseY - 5, 3, -7, true))
+                }
+            } else {
+                bullets.push(new Bullet(mouseX + 10, mouseY - 5, 0, -7, true));
+                if (spread == true) {
+                    //Adds 2 new bullets for "spread" powerup
+                    bullets.push(new Bullet(mouseX + 10, mouseY - 5, -3, -7, true))
+                    bullets.push(new Bullet(mouseX + 10, mouseY - 5, 3, -7, true))
+                }
             }
         }
 
@@ -79,9 +146,13 @@ function draw() {
             //shoot
             if (frameCount % 50 == 0 && random(1) < 0.3) {
                 bullets.push(enemies[i].ShootBullet(ship.cursorX, ship.cursorY));
+                if (enemies[i].type != 1) {
+                    bullets.push(enemies[i].ShootBullet(ship.cursorX - 50, ship.cursorY));
+                    bullets.push(enemies[i].ShootBullet(ship.cursorX + 50, ship.cursorY));
+                }
             }
             enemies[i].Update();
-            enemies[i].Show(enemyImg);
+                enemies[i].Show(EshipImgs[enemies[i].img]);
             if (ship.CheckCollision(enemies[i]) == true) {
                 enemies[i].isDead = true;
             }
@@ -92,7 +163,7 @@ function draw() {
                         score += 5;
                         //chance to spawn PowerUp
                         if (random() >= 0.75) {
-                            powerUps.push(new PowerUp(enemies[i].position.x, enemies[i].position.y, random(-3, 3), random(-3, 3), possiblePowerUps[floor(random(possiblePowerUps.len))]));
+                            powerUps.push(new PowerUp(enemies[i].position.x, enemies[i].position.y, random(-3, 3), random(-3, 3)/*, activePowerUps[floor(random(activePowerUps.length))]*/));
                         }
                     }
                 }
@@ -135,51 +206,54 @@ function draw() {
         for (var i = powerUps.length - 1; i >= 0; i--) {
             if (powerUps[i].isDead) {
                 //Add dead powerup's type to active powerups
-                activePowerUps.push(powerUps[i].PowerUpType)
+                //activePowerUps[powerUps[i].PowerUpType] = true
                 powerUps.splice(i, 1);
             }
         }
-
+        //update costume if needed
+        if (keyIsDown(67) && !cPressed) {
+            costume++;
+            cPressed = true;
+        }
+        if (!keyIsDown(67) && cPressed)
+            cPressed = false;
     } else {
-        cursor(ARROW)
-        if (mouseIsPressed)
-            cursor(NoWayImg)
+        cursor(ARROW);
         background(0);
         stroke('red');
-        ship.Show(shipImg);
+        if (costume % 3 == 0) {
+            ship.Show(shipImg);
+        } else if (costume % 3 == 1) {
+            ship.Show(ship2Img);
+        } else {
+            ship.Show(ship3Img);
+        }
         ShowScore();
         DisplayGameOver();
         for (var i = 0; i < enemies.length; i++)
             enemies[i].Show(enemyImg);
+        //Restart Game
+        if (keyIsDown(13)) {
+            //activePowerUps =
+            ship.isDead = false;
+            score = 0;
+            enemies.splice(0, enemies.length);
+            bullets.splice(0, bullets.length);
+            //activePowerUps.splice(0, activePowerUps.length);
+            ship.health = 5;
+            costume = 0;
+        }
     }
+}
 
-}
-//Restart Game
-function keyPressed() {
-    if (keyCode === 13 && ship.isDead) {
-        ship.isDead = false;
-        score = 0;
-        enemies.splice(0, enemies.length);
-        bullets.splice(0, bullets.length);
-        activePowerUps.splice(0, activePowerUps.length)
-        ship.health = 5;
-    }
-}
-function contains(list, item) {
-    for (var i = 0; i++; i < list.length) {
-        if (list[i] == item)
-            return true
-    }
-    return false
-}
 function ShowScore() {
     //show score
     textSize(32);
     textFont(font);
     fill("#FFFFFF");
     noStroke();
-    textAlign(LEFT)
-    text("Score: " + score, 10, 40);
+    textAlign(LEFT, TOP)
+    text("Score: " + score, 10, 10);
     stroke(255);
     noFill();
 }
@@ -189,7 +263,7 @@ function DisplayGameOver() {
     fill(255);
     noStroke();
     textAlign(CENTER, CENTER)
-    text("GAME OVER -- Press Enter to restart", 0, height / 2, width, height);
+    text("GAME OVER -- Press Enter to restart", 0, 0, width, height);
     stroke(255);
     noFill();
 }
@@ -203,4 +277,7 @@ function DisplayHealth() {
 }
 function windowResized() {
     resizeCanvas(windowWidth - 10, windowHeight - 17)
+    if (ship.isDead) {
+        resizeCanvas(windowWidth - 100, windowHeight - 107)
+    }
 }
