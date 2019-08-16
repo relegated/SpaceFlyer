@@ -3,15 +3,13 @@ function Enemy(x) {
     this.velocity = createVector(0, 5);
     this.size = 20;
     this.isDead = false;
+    this.type = 0;
+    this.img = EshipImgs.Normal;
     if (random()< 0.04) {
         this.type = 1;
-        this.img = "Down";
+        this.img = EshipImgs.Down;
         this.size = 165;
-    } else {
-        this.type = 0;
-        this.img = "Normal";
     }
-
     this.Update = function () {
         if (this.type == 1) {
             this.position.add(this.velocity);
@@ -19,13 +17,13 @@ function Enemy(x) {
             this.position.add(0 - this.velocity)
             if (Math.abs(this.position.x - ship.cursorX) > 200) {
                 if (this.position.x > ship.cursorX) {
-                    this.img = "Left";
+                    this.img = EshipImgs.Left;
                     this.position.add(createVector(-5, 0));
                 } else if (this.position.x < ship.cursorX){
-                    this.img = "Right";
+                    this.img = EshipImgs.Right;
                     this.position.add(createVector(5, 0));
                 } else {
-                    this.img = "Down";
+                    this.img = EshipImgs.Down;
                 }
             }
         }
@@ -34,9 +32,9 @@ function Enemy(x) {
             this.isDead = true;
     }
 
-    this.Show = function (sprite) {
+    this.Show = function () {
         //rect(this.position.x, this.position.y, this.size, this.size);
-        image(sprite, this.position.x - 10, this.position.y - 10);
+        image(this.img, this.position.x - 10, this.position.y - 10);
     }
 
     this.CheckBulletCollision = function (bullet) {

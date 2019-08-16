@@ -20,21 +20,21 @@ let sprite;
 //Classes
 //Not working
 //Constructs, creates, and updates stars. class StarWorker(){
-/*let starsR;
-let starsX;
-let starsY;
+let starsR = [];
+let starsX = [];
+let starsY = [];
 function Stars_SpawnOrigin() {
     starsX = []; //X pos of stars
     starsY = []; //Y pos of stars
     starsR = []; //Radius of stars
-    for (var i = 0; i < Math.floor(random(15, 20) + (height / 15)); i++) {
-        starsR.push(random(15, 20))
-        starsX.push(random(width - starsR[starsR.length() - 1]))
+    for (var i = 0; i < Math.floor(random(15, 20) + (height / 30)); i++) {
+        starsR.push(random(3, 6))
+        starsX.push(random(width - starsR[starsR.length - 1]))
         starsY.push(random(height))
     }
 }
 function Stars_Update() {
-    for (var i = 0; i < starsR.length(); i++) {
+    for (var i = 0; i < starsR.length; i++) {
         starsY[i] += Math.round(starsR[i] / 5)
         noStroke()
         fill('#FFFFFF')
@@ -51,7 +51,7 @@ function Stars_Update() {
         starsX.push(random(width - starsR[starsR.length]))
         starsY.push(random(height))
     }
-}*/
+}
 //}
 
 function preload() {
@@ -60,10 +60,10 @@ function preload() {
     ship3Img = loadImage('assets/ship3.png');
     heartImg = loadImage('assets/heart.png');
     EshipImgs = {
-        "Down": loadImage('assets/Eship.png'),
-        "Right": loadImage('assets/EshipR.png'),
-        "Left": loadImage('assets/EshipL.png'),
-        "Normal": loadImage('assets/enemy.png')
+        Down: loadImage('assets/Eship.png'),
+        Right: loadImage('assets/EshipR.png'),
+        Left: loadImage('assets/EshipL.png'),
+        Normal: loadImage('assets/enemy.png')
     };
     font = loadFont('assets/serif.ttf')
 }
@@ -74,6 +74,7 @@ function setup() {
     stroke(255);
     noFill();
     frameRate(70);
+    Stars_SpawnOrigin();
 }
 
 function draw() {
@@ -81,7 +82,7 @@ function draw() {
     if (!ship.isDead) {
         noCursor();
         background(0);
-        //Stars_Update();
+        Stars_Update();
         ShowScore();
         DisplayHealth();
 
@@ -152,7 +153,7 @@ function draw() {
                 }
             }
             enemies[i].Update();
-                enemies[i].Show(EshipImgs[enemies[i].img]);
+                enemies[i].Show();
             if (ship.CheckCollision(enemies[i]) == true) {
                 enemies[i].isDead = true;
             }
