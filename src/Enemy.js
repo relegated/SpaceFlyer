@@ -34,7 +34,9 @@ function Enemy(x) {
 
     this.Show = function () {
         //rect(this.position.x, this.position.y, this.size, this.size);
+        try {
         image(this.img, this.position.x - 10, this.position.y - 10);
+        } finally {}
     }
 
     this.CheckBulletCollision = function (bullet) {
