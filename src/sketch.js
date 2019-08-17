@@ -60,9 +60,7 @@ function preload() {
     ship3Img = loadImage('assets/ship3.png');
     heartImg = loadImage('assets/heart.png');
     EshipImgs = {
-        Down: loadImage('assets/Eship.png'),
-        Right: loadImage('assets/EshipR.png'),
-        Left: loadImage('assets/EshipL.png'),
+        Super: loadImage('assets/Eship.png'),
         Normal: loadImage('assets/enemy.png')
     };
     font = loadFont('assets/serif.ttf')

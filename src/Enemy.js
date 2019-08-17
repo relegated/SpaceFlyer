@@ -5,9 +5,10 @@ function Enemy(x) {
     this.isDead = false;
     this.type = 0;
     this.img = EshipImgs.Normal;
-    if (random()< 0.04) {
+    this.angle = Math.atan2((returnBullet.y - shipY), (returnBullet.x - shipX));
+    if (Math.random() < 0.04) {
         this.type = 1;
-        this.img = EshipImgs.Down;
+        this.img = EshipImgs.Special;
         this.size = 165;
     }
     this.Update = function () {
@@ -17,26 +18,26 @@ function Enemy(x) {
             this.position.add(0 - this.velocity)
             if (Math.abs(this.position.x - ship.cursorX) > 200) {
                 if (this.position.x > ship.cursorX) {
-                    this.img = EshipImgs.Left;
                     this.position.add(createVector(-5, 0));
-                } else if (this.position.x < ship.cursorX){
-                    this.img = EshipImgs.Right;
+                } else if (this.position.x < ship.cursorX) {
                     this.position.add(createVector(5, 0));
-                } else {
-                    this.img = EshipImgs.Down;
                 }
             }
         }
-
+        this.angle = Math.atan2((returnBullet.y - shipY), (returnBullet.x - shipX));
         if (this.position.y > height)
             this.isDead = true;
     }
 
     this.Show = function () {
         //rect(this.position.x, this.position.y, this.size, this.size);
-        try {
-        image(this.img, this.position.x - 10, this.position.y - 10);
-        } finally {}
+        if (this.img == EshipImgs.Special) {
+            translate(this.position.x - 10, this.position.y - 10);
+            rotate(this.angle);
+            image(this.img, 0, 0);
+        } else {
+            image(this.img, this.position.x - 10, this.position.y - 10);
+        }
     }
 
     this.CheckBulletCollision = function (bullet) {
@@ -50,10 +51,9 @@ function Enemy(x) {
 
     this.ShootBullet = function (shipX, shipY) {
         returnBullet = new Bullet(this.position.x + 7, this.position.y + 10, 0, 0, false);
-        var angle = Math.atan2((returnBullet.y - shipY), (returnBullet.x - shipX));
         const speed = 8.5;
-        returnBullet.dx = -1 * speed * Math.cos(angle);
-        returnBullet.dy = -1 * speed * Math.sin(angle);
+        returnBullet.dx = -1 * speed * Math.cos(this.angle);
+        returnBullet.dy = -1 * speed * Math.sin(this.angle);
 
         return returnBullet;
     }
