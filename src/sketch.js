@@ -40,9 +40,9 @@ function Stars_Update() {
         fill('#FFFFFF')
         ellipse(starsX[i], starsY[i], starsR[i])
         if (starsY[i] + (2 * starsR[i]) > height) {
-            starsR.splice(i)
-            starsX.splice(i)
-            starsY.splice(i)
+            starsR.splice(i, 0);
+            starsX.splice(i, 0);
+            starsY.splice(i, 0);
             i--;
         }
     }
@@ -63,7 +63,7 @@ function preload() {
         Super: loadImage('assets/Eship.png'),
         Normal: loadImage('assets/enemy.png')
     };
-    font = loadFont('assets/serif.ttf')
+    font = loadFont('assets/serif.ttf');
 }
 
 function setup() {
@@ -87,7 +87,7 @@ function draw() {
         if (random(1) < 0.03) {
             enemies.push(new Enemy(floor(random(width))));
         }
-        sprite = costume % 3
+        sprite = costume % 3;
         ship.Update(mouseX, mouseY, sprite);
         if (sprite == 0) {
             ship.Show(shipImg);
@@ -145,7 +145,7 @@ function draw() {
             //shoot
             if (frameCount % 50 == 0 && random(1) < 0.3) {
                 bullets.push(enemies[i].ShootBullet(ship.cursorX, ship.cursorY));
-                if (enemies[i].type != 1) {
+                if (enemies[i].type != 0) {
                     bullets.push(enemies[i].ShootBullet(ship.cursorX - 50, ship.cursorY));
                     bullets.push(enemies[i].ShootBullet(ship.cursorX + 50, ship.cursorY));
                 }
@@ -168,7 +168,6 @@ function draw() {
                 }
             }
         }
-
         //update powerups
         for (var i = 0; i < powerUps.length; i++) {
             powerUps[i].Update();
@@ -183,24 +182,18 @@ function draw() {
                 }
             }
         }
-
-
-
-
         //cleanup dead enemeies
         for (var i = enemies.length - 1; i > 0; i--) {
             if (enemies[i].isDead) {
                 enemies.splice(i, 1);
             }
         }
-
         //cleanup dead bullets
         for (var i = bullets.length - 1; i > 0; i--) {
             if (bullets[i].isDead) {
                 bullets.splice(i, 1);
             }
         }
-
         //cleanup dead powerups
         for (var i = powerUps.length - 1; i >= 0; i--) {
             if (powerUps[i].isDead) {

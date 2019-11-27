@@ -5,7 +5,6 @@ function Enemy(x) {
     this.isDead = false;
     this.type = 0;
     this.img = EshipImgs.Normal;
-    this.angle = Math.atan2((returnBullet.y - shipY), (returnBullet.x - shipX));
     if (Math.random() < 0.04) {
         this.type = 1;
         this.img = EshipImgs.Special;
@@ -15,7 +14,7 @@ function Enemy(x) {
         if (this.type == 1) {
             this.position.add(this.velocity);
         } else {
-            this.position.add(0 - this.velocity)
+            //this.position.add(0 - this.velocity)
             if (Math.abs(this.position.x - ship.cursorX) > 200) {
                 if (this.position.x > ship.cursorX) {
                     this.position.add(createVector(-5, 0));
@@ -24,7 +23,6 @@ function Enemy(x) {
                 }
             }
         }
-        this.angle = Math.atan2((returnBullet.y - shipY), (returnBullet.x - shipX));
         if (this.position.y > height)
             this.isDead = true;
     }
@@ -50,7 +48,7 @@ function Enemy(x) {
     }
 
     this.ShootBullet = function (shipX, shipY) {
-        returnBullet = new Bullet(this.position.x + 7, this.position.y + 10, 0, 0, false);
+        var returnBullet = new Bullet(this.position.x + 7, this.position.y + 10, 0, 0, false);
         const speed = 8.5;
         returnBullet.dx = -1 * speed * Math.cos(this.angle);
         returnBullet.dy = -1 * speed * Math.sin(this.angle);
