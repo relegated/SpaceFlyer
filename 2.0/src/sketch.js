@@ -92,6 +92,8 @@ class Ship {
         this.HP = 10;
         this.isDead = false;
         this.iFrames = 100;
+        this.score = 0;
+        this.combo = 0;
     }
     SetImage(image) {
         this.image = image;
@@ -136,10 +138,11 @@ class Enemy {
         this.Velocity = createVector(0, 5);
         this.angle = 0;
         this.isDead = false;
+        this.isDeadFromBullet = false;
     }
     Update() {
         this.pos.add(this.Velocity);
-        if (dist(this.pos.x + 25, this.pos.y + 50, ship.x + 40, ship.y + 305) <= 63 && ship.iFrames <= 0) {
+        if (dist(this.pos.x + 25, this.pos.y + 25, ship.x, ship.y + 280) <= 80 && ship.iFrames <= 0) {
             ship.iFrames = 50;
             this.isDead = true;
             ship.HP--;
@@ -189,7 +192,10 @@ class Bullet {
         this.isDead = false;
     }
     Update(index) {
-        if (this.pos.y < 0 || this.pos.y > height || this.pos.x < 0 || this.pos.x > width) this.isDead = true;
+        if (this.pos.y < 0 || this.pos.y > height || this.pos.x < 0 || this.pos.x > width) {
+            this.isDead = true;
+            if (this.owner == "ship") ship.combo = 0;
+        }
         this.pos.add(this.vel);
         if (this.owner == "enm") {
             this.pos.add(1 * this.vel.x, 1 * this.vel.y);
@@ -201,7 +207,14 @@ class Bullet {
         } else {
             createOwnedLoop(this, enemies, function (i) {
                 if (dist(this.pos.x, this.pos.y, enemies[i].pos.x, enemies[i].pos.y) <= 35) {
+                    ship.combo++;
+                    if (ship.combo > 10)
+                        ship.combo = 10;
+                    if (ship.combo > 3)
+                        combos.push(new Combo(this.pos.x, this.pos.y, ship.combo));
+                    ship.score += ship.combo;
                     enemies[i].isDead = true;
+                    enemies[i].isDeadFromBullet = true;
                     this.isDead = true;
                 }
             });
@@ -225,6 +238,25 @@ class Bullet {
         pop();
     }
 }
+//Combo class, for displaying great combos.
+class Combo {
+    constructor(x, y, comboCount) {
+        this.x = x;
+        this.y = y;
+        this.comboCount = comboCount;
+        this.transparency = 0;
+    }
+    Update() {
+        this.transparency += 4;
+        push();
+        fill(0, 150, 256, 256 - this.transparency);
+        textFont(font);
+        textSize(20);
+        textAlign(LEFT, TOP);
+        text("Combo: " + this.comboCount, this.x, this.y);
+        pop();
+    }
+}
 class CollectableHeart {
     constructor(x) {
         this.x = x;
@@ -238,7 +270,7 @@ class CollectableHeart {
         translate(this.x, this.y);
         image(heartCollectImg, 0, 0);
         pop();
-        if (dist(this.x + 7, this.y + 7, ship.x + 50, ship.y + 255) <= 63) {
+        if (dist(this.x + 7, this.y + 7, ship.x, ship.y + 250) <= 60) {
             if (ship.HP < 10) ship.HP++;
             this.isDead = true;
         }
@@ -316,31 +348,61 @@ class Button {
         }
         rect(this.x, this.y, this.w, this.h);
         noStroke();
-        fill("#000000");
+        fill("#FFFFFF");
         textAlign(CENTER, CENTER);
         textFont(font);
         textSize(16);
-        text(this.text, this.x, this.y, this.x + this.w, this.y + this.h);
+        text(this.text, this.x, this.y, this.w, this.h);
         pop();
     }
     onClick() { }
 }
+//Coin class. Get coins to buy cool things at the Shop!
+class Coin {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.frame = 0;
+        this.isDead = false;
+    }
+    Update() {
+        this.y += 2;
+        this.frame += 0.5;
+        var dataNum = Math.floor(this.frame) % 10;
+        if (dataNum > 5)
+            image(coinImage.flip, this.x, this.y, 25, 25, coinImageData[dataNum], 0, 127, 127);
+        else
+            image(coinImage.normal, this.x, this.y, 25, 25, coinImageData[dataNum], 0, 127, 127);
+        if (dist(this.x + 12, this.y + 12, ship.x + 50, ship.y + 256) <= 80) {
+            coinsCollected++;
+            this.isDead = true;
+        }
+        if (this.y > height) this.isDead = true;
+    }
+}
 //Setting it up: Vars
+let currentUpgrades = [""];
 let stars = [];
-let ship;
 let enemies = [];
 let particles = [];
+let coins = [];
 let bullets = [];
-let keyWait = 0;
+let combos = [];
+let collectableHearts = [];
+let coinImageData = [0, 137, 265, 389, 508, 606, 83, 205, 325, 452];
 let shipImgs = {};
 let enemyImgs = {};
+let keyWait = 0;
+let ship;
 let heartImg;
 let heartCollectImg;
 let font;
-let collectableHearts = [];
 let mode;
 let lagMode;
 let playButton;
+let upgradeButton;
+let coinImage;
+let coinsCollected = 0;
 //Setting it up: Loading
 function preload() {
     shipImgs = {
@@ -359,7 +421,14 @@ function preload() {
     };
     heartImg = loadImage("assets/heart.png");
     heartCollectImg = loadImage("assets/heartCollect.png");
+    coinImage = {
+        normal: loadImage("assets/coinAnimation.png"),
+        flip: loadImage("assets/coinAnimationFlip.png")
+    }
     font = loadFont("assets/serif.ttf");
+}
+function setup() {
+    createCanvas(800, 800);
 }
 //Setting it up
 function setup() {
@@ -367,21 +436,21 @@ function setup() {
         createCanvas(getURLParams().width, getURLParams().height);
     else createCanvas(windowWidth - 17, windowHeight - 17);
     loadMenu();
-    lagMode = new SlideSwitch(10, height - 30, "#00AA22", "#333333", false);
+    lagMode = new SlideSwitch(width - 70, 10, "#00AA22", "#333333", false);
 }
 //Load the menu
 function menuFrame() {
     noCursor();
     lagMode.Update();
     playButton.Update();
+    upgradeButton.Update();
     slideswitchbutton__mousewaspressed = mouseIsPressed;
     push();
     fill("#FFFFFF");
-    noStroke();
-    textAlign(CENTER);
     textFont(font);
     textSize(16);
-    text("Lag Mode", 0, height - 40, 80);
+    textAlign(RIGHT, TOP);
+    text("Lag Mode", width - 12, 30);
     pop();
     push();
     fill("#00AA44");
@@ -396,6 +465,7 @@ function loadMenu() {
     mode = "menu";
     playButton = new Button((width - 200) / 2, (height - 100) / 2, 200, 100, "#000000", "#555555", "#AAAAAA", "");
     playButton.onClick = playGame;
+    upgradeButton = new Button(width - 110, 100, 100, 50, "#000000", "#333333", "#666666", "Upgrades");
     noCursor();
 }
 //Setting it up -- in-game
@@ -408,6 +478,7 @@ function playGame() {
     particles = [];
     bullets = [];
     collectableHearts = [];
+    combos = [];
     for (var i = 0; i < 100; i++) {
         stars.push(new Star(Math.random() * width, Math.random() * height));
     }
@@ -441,9 +512,8 @@ function draw() {
                 //Update the stars
                 createLoop(stars, function (i) {
                     stars[i].Update();
-                    if (stars[i].pos.y > height + (stars[i].r * 2)) {
+                    if (stars[i].pos.y > height + (stars[i].r * 2))
                         stars[i] = new Star(Math.random() * width, -15);
-                    }
                 });
             }
         }
@@ -470,6 +540,21 @@ function draw() {
                 if (collectableHearts[i].isDead) collectableHearts.remove(i);
             })
         }
+        //Only update the coins if you're not dead. Otherwise, just draw them.
+        if (ship.isDead) {
+            createLoop(coins, function(i) {
+                var dataNum = Math.floor(coins[i].frame) % 10;
+                if (dataNum > 5)
+                    image(coinImage.flip, coins[i].x, coins[i].y, 25, 25, coinImageData[dataNum], 0, 127, 127);
+                else
+                    image(coinImage.normal, coins[i].x, coins[i].y, 25, 25, coinImageData[dataNum], 0, 127, 127);
+            });
+        } else {
+            createLoop(coins, function(i) {
+                coins[i].Update();
+                if (coins[i].isDead) coins.remove(i);
+            });
+        }
         //Only update the ships if you aren't dead. Otherwise, just draw them.
         if (ship.isDead) {
             createLoop(enemies, function (i) {
@@ -495,6 +580,8 @@ function draw() {
                             (Math.random() - 0.5) * 20
                         ));
                     });
+                    if (Math.random() < 0.5 && enemies[i].isDeadFromBullet)
+                        coins.push(new Coin(enemies[i].pos.x, enemies[i].pos.y));
                 }
                 if (enemies[i].pos.y > height + 50 || enemies[i].isDead)
                     enemies.remove(i);
@@ -516,6 +603,24 @@ function draw() {
         createLoop(ship.HP, function (i) {
             image(heartImg, (width - 40) - (i * 35), 5);
         });
+        createLoop(combos, function(i) {
+            combos[i].Update();
+            if (combos[i].transparency >= 256) combos.remove(i);
+        });
+        //Show your score & your money.
+        push();
+        fill("#FFFFFF");
+        textFont(font);
+        textSize(20);
+        textAlign(LEFT, TOP);
+        text("Score: " + ship.score, 10, 10);
+        var dataNum = Math.floor(frameCount / 2) % 10;
+        if (dataNum > 5)
+            image(coinImage.flip, 5, 40, 25, 25, coinImageData[dataNum], 0, 127, 127);
+        else
+            image(coinImage.normal, 5, 40, 25, 25, coinImageData[dataNum], 0, 127, 127);
+        text(coinsCollected, 30, 42);
+        pop();
         //If the ship IS dead, Tell them to push Enter. If they do, they can play again!
         if (ship.isDead) {
             push();
@@ -530,5 +635,7 @@ function draw() {
             if (keyIsDown(13))
                 loadMenu();
         }
+        //If the Escape key is pressed, go to the main menu.
+        if (keyIsDown(27)) loadMenu();
     }
 }
